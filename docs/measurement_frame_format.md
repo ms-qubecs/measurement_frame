@@ -12,7 +12,7 @@ Key features are as follows:
 
 ## Frame format
 
-SFF is carried in an Ethernet II frame. All multi-byte fields use network byte order (big-endian).
+MFF is carried in an Ethernet II frame. All multi-byte fields use network byte order (big-endian).
 
 ```
  +--------+--------+--------+--------+--------+--------+--------+--------+
