@@ -78,6 +78,8 @@ If `N` is not a multiple of 8, the unused least significant bits of the final by
 ### Interpretation
 
 Each bit represents the measured measurement value of the corresponding qubit:
+
 - `0`
 - `1`
+
 When multiple frames with the same `Step ID` are merged, the payloads shall be combined by bitwise OR.
