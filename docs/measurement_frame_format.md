@@ -85,51 +85,59 @@ The following example shows a frame carrying one measurement result bit and two 
 
 Given:
 
-- `#. of Qubits = 25`
+- `#. of Qubits = 49`
 - `#. of Information bits = 3`
 
-Each information bit field is encoded as a 25-bit vector and occupies `ceil(25 / 8) = 4` bytes.
-The payload therefore occupies `3 × 4 = 12` bytes.
+Each information bit field is encoded as a 49-bit vector and occupies `ceil(49 / 8) = 7` bytes.
+The payload therefore occupies `3 * 74  =21` bytes.
 
 ```
 +--------------------+--------------------+--------------------+
 | Measurement result | Soft information 0 | Soft information 1 |
-|      4 bytes       |      4 bytes       |      4 bytes       |
+|      7 bytes       |      7 bytes       |      7 bytes       |
 +--------------------+--------------------+--------------------+
 ```
 
 The bit layout of each information bit field is:
 
 ```
-Byte 0        Byte 1        Byte 2        Byte 3
-+--------+    +--------+    +--------+    +--------+
-|0......7|    |8.....15|    |16....23|    |24|PAD..|
-+--------+    +--------+    +--------+    +--------+
- MSB                                                  LSB
+Byte 0        Byte 1        ...         Byte 6
++--------+    +--------+            +--------+
+|0......7|    |8.....15|    ...     |48|PAD..|
++--------+    +--------+            +--------+
+MSB                                        LSB
 ```
 
-where
+where:
 
 - Bit 0 corresponds to physical qubit ID 0.
-- Bit 24 corresponds to physical qubit ID 24.
+- Bit 48 corresponds to physical qubit ID 48.
 - The remaining seven least significant bits of the final byte are padding bits and shall be set to zero.
 
 For example, if
 
 ```
-Qubit 0  = 1
-Qubit 1  = 0
+Physical qubit ID 0  = 1
+Physical qubit ID 1  = 0
 ...
-Qubit 24 = 1
+Physical qubit ID 48 = 1
 ```
 
-the last byte is encoded as
+the first byte is encoded as
+
++--------+
+|10000000|
++--------+
+
+where bit 7 (MSB) corresponds to physical qubit ID 0 and bit 6 corresponds to physical qubit ID 1.
+
+The last byte is encoded as
 
 ```
-+---+-------+
-|24 | PAD   |
-+---+-------+
-  1 0000000
++---+-----------------+
+|48 | Padding(7bit)   |
++---+-----------------+
+  1   0000000
 ```
 
-where the padding bits are all zero.
+The padding bits are always set to zero.
