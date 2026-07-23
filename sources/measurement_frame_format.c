@@ -51,7 +51,7 @@ void print_measurement_frame(measurement_frame_t *frame)
     printf("TYPE: 0x%04x\n", ntohs(*(unsigned short*)frame->header_type));
     printf("VERSION: 0x%02x\n", ntohs(*(unsigned short*)frame->version));
     printf("STEP: 0x%016lx\n", be64toh(*(unsigned long long*)frame->step_id));
-    printf("Q:0x%08x\n", ntohl(*(unsigned int*)frame->qubit_id));
+    printf("Device:0x%08x\n", ntohl(*(unsigned int*)frame->device_id));
     unsigned int qubit_num = ntohl(*(unsigned int*)frame->qubit_num);
     unsigned int info_num = ntohl(*(unsigned int*)frame->info_num);
     printf("#. of Qubits: %d\n", qubit_num);

@@ -22,7 +22,7 @@ MFF is carried in an Ethernet II frame. All multi-byte fields use network byte o
  +--------+--------+--------+--------+--------+--------+--------+--------+
  | Step ID                                                               |
  +--------+--------+--------+--------+--------+--------+--------+--------+
- | Qubit ID                          | #. of Qubits                      |
+ | Device ID                         | #. of Qubits                      |
  +--------+--------+--------+--------+--------+--------+--------+--------+
  | #. of Information bits            | Measurement data payload ...      |
  +--------+--------+--------+--------+--------+--------+--------+--------+
@@ -34,7 +34,7 @@ MFF is carried in an Ethernet II frame. All multi-byte fields use network byte o
 - `EtherType` is 2 octets and is set to `0x3434` for MFF.
 - `Version` is 2 octets. The current version is `0x0002`.
 - `Step ID` is 8 octets and identifies the QEC step (e.g., round index).
-- `Qubit ID` is 4 octets and identifies the physical qubit associated with this measurement frame.
+- `Device ID` is 4 octets and identifies the control device unit.
 - `#. of Qubits` is 4 octets and specifies the total number of physical qubits in the target quantum processor. This value determines the length of each measurement information bit vector.
 - `#. of Information bits` is 4 octets and specifies the number of measurement information bits for each qubit.
   - Each qubit has at least one measured bit representing its state.

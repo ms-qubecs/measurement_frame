@@ -8,14 +8,14 @@
 /**
  * generate measurement info
  * @param step_id step ID
- * @param q_id logical qubit ID
+ * @param device_id control device id
  * @param qubit_num #. of qubits
  * @param info_num #. of information bits
  * @param data bit-vector of measurement data
  * @param dest_mac destination MAC address (ex. XX:XX:XX:XX:XX:XX)
  * @param src_mac source MAC address (ex. YY:YY:YY:YY:YY:YY)
  */
-measurement_frame_t * gen_measurement(unsigned long long step_id, unsigned int qubit_id, unsigned int qubit_num, unsigned int info_num, unsigned char *data, char *dest_mac, char *src_mac)
+measurement_frame_t * gen_measurement(unsigned long long step_id, unsigned int device_id, unsigned int qubit_num, unsigned int info_num, unsigned char *data, char *dest_mac, char *src_mac)
 {
     measurement_frame_t * frame = new_measurement_frame(qubit_num, info_num);
     if(frame == NULL) return NULL;
@@ -24,7 +24,7 @@ measurement_frame_t * gen_measurement(unsigned long long step_id, unsigned int q
     parse_mac_address(frame->src, src_mac);
 
     *(unsigned long long*)frame->step_id = htobe64(step_id);
-    *(unsigned int*)frame->qubit_id = htonl(qubit_id);
+    *(unsigned int*)frame->device_id = htonl(device_id);
     
     int bytes = ((qubit_num + 7) / 8) * info_num;
     memcpy(frame->measurement, data, bytes);
@@ -57,13 +57,13 @@ int main(int argc, char **argv)
     char *dest_mac = argv[2];
     
     unsigned long long step_id = 100L;
-    unsigned int qubit_id = 0xDEADBEEF;
+    unsigned int device_id = 0xDEADBEEF;
     unsigned int qubit_num = 25;
     unsigned int info_num = 3;
     // data is ceil(25/8) * 2 = 4 * 2 = 8
     unsigned char data[8] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef};
 
-    measurement_frame_t *frame = gen_measurement(step_id, qubit_id, qubit_num, info_num, data, dest_mac, src_mac);
+    measurement_frame_t *frame = gen_measurement(step_id, device_id, qubit_num, info_num, data, dest_mac, src_mac);
     print_measurement_frame(frame);
     send_measurement(interface_name, frame);
 

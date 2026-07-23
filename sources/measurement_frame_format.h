@@ -10,7 +10,7 @@ typedef struct {
     unsigned char header_type[2]; // Type
     unsigned char version[2];
     unsigned char step_id[8];
-    unsigned char qubit_id[4];
+    unsigned char device_id[4];
     unsigned char qubit_num[4];
     unsigned char info_num[4];
     unsigned char measurement[];
