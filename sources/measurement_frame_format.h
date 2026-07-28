@@ -1,7 +1,7 @@
 #ifndef __MEASUREMENT_FRAME_FORMAT_H__
 #define __MEASUREMENT_FRAME_FORMAT_H__
 
-static const unsigned short MEASUREMENT_FRAME_TYPE = 0x0344;
+static const unsigned short MEASUREMENT_FRAME_TYPE = 0x3434;
 static const unsigned short MEASUREMENT_FRAME_VERSION = 0x0002;
 
 typedef struct {
