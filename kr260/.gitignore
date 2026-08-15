@@ -1,0 +1,15 @@
+*~
+/prj
+*.jou
+*.str
+*.log
+/create_prj.tcl
+*.edn
+.Xil
+__pycache__/
+*.mcs
+*.prm
+ram.loc
+_confrom.mmi
+/bin/
+*.xsa
