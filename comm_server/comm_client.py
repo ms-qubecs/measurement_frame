@@ -1,3 +1,4 @@
+import sys
 import argparse
 import socket
 import struct
@@ -102,10 +103,13 @@ def make_kick_measurement_frame(
 def main() -> None:
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--interface", default="eth0")
-    parser.add_argument("--dst-mac", required=True, help="destination MAC address")
-    parser.add_argument("--src-mac", required=True, help="this MAC address")
-    parser.add_argument("--backend-mac", required=True, help="configuration MAC address")
+    parser.add_argument("--interface", required=True, help="Interface NIC to send comm frame")
+    parser.add_argument("--dst-mac", required=True, help="Destination MAC address (target comm server)")
+    parser.add_argument("--src-mac", required=True, help="This MAC address")
+    parser.add_argument("--backend-mac", required=True, help="Configuration MAC address (destination MAC of MFF frame)")
+    parser.add_argument("--command", required=True, help="Command: backend / reset / kick")
+    parser.add_argument("--distance", type=int, default=3)
+    parser.add_argument("--round", type=int, default=4)
     
     args = parser.parse_args()
 
@@ -113,25 +117,33 @@ def main() -> None:
     source_mac = parse_mac(args.src_mac)
     backend_mac = parse_mac(args.backend_mac)
 
-#    frame = make_set_backend_frame(
-#        destination_mac=destination_mac,
-#        source_mac=source_mac,
-#        backend_mac=backend_mac,
-#    )
-#    frame = make_reset_frame(
-#        destination_mac=destination_mac,
-#        source_mac=source_mac,
-#    )
-    frame = make_kick_measurement_frame(
-        destination_mac=destination_mac,
-        source_mac=source_mac,
-        code_distance = 3,
-        num_of_rounds = 4,
-    )
+    if args.command == "backend":
+        frame = make_set_backend_frame(
+            destination_mac=destination_mac,
+            source_mac=source_mac,
+            backend_mac=backend_mac,
+        )
+    elif args.command == "reset":
+        frame = make_reset_frame(
+            destination_mac=destination_mac,
+            source_mac=source_mac,
+        )
+    elif args.command == "kick":
+        frame = make_kick_measurement_frame(
+            destination_mac=destination_mac,
+            source_mac=source_mac,
+            code_distance = args.distance,
+            num_of_rounds = args.round,
+        )
+    else:
+        print(f"unknown command {args.command}")
+        sys.exit(0)
 
     print(f"Destination MAC : {format_mac(destination_mac)}")
     print(f"Source MAC      : {format_mac(source_mac)}")
     print(f"Backend MAC     : {format_mac(backend_mac)}")
+    print(f"Code distance   : {args.distance}")
+    print(f"#. of rounds    : {args.round}")
     print("TX:", frame.hex(" "))
 
     with socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETHERTYPE)) as sock:

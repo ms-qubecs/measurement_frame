@@ -178,8 +178,8 @@ def main(interface, target_host) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--interface", default="eth0")
-    parser.add_argument("--target-host", default="10.3.0.240")
+    parser.add_argument("--interface", required=True, help="Listening interface for communicatin packet")
+    parser.add_argument("--target-host", required=True, help="Hostname or IP address of target MFF-sender host")
     args = parser.parse_args()
 
     main(args.interface, args.target_host)
