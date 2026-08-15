@@ -273,6 +273,20 @@ architecture RTL of top_kr260 is
   signal MyUdpPort_0    : std_logic_vector(15 downto 0);
   signal MyUdpPort_1    : std_logic_vector(15 downto 0);
 
+  signal network_override_en      : std_logic;
+  signal network_override_ipaddr  : std_logic_vector(31 downto 0);
+  signal network_override_macaddr : std_logic_vector(47 downto 0);
+  signal network_override_netmask : std_logic_vector(31 downto 0);
+  signal network_override_gateway : std_logic_vector(31 downto 0);
+  signal network_override_target  : std_logic_vector(31 downto 0);
+
+  signal config_memory_ipaddr  : std_logic_vector(31 downto 0);
+  signal config_memory_macaddr : std_logic_vector(47 downto 0);
+  signal config_memory_netmask : std_logic_vector(31 downto 0);
+  signal config_memory_gateway : std_logic_vector(31 downto 0);
+  signal config_memory_target  : std_logic_vector(31 downto 0);
+
+
   component mff_sender_wrapper
     port (
       clk   : in std_logic;
@@ -308,7 +322,18 @@ architecture RTL of top_kr260 is
     PORT (
       clk : IN STD_LOGIC;
       probe_out0 : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-      probe_out1 : OUT STD_LOGIC_VECTOR(15 DOWNTO 0) 
+      probe_out1 : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
+      probe_out2 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
+      probe_out3 : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+      probe_out4 : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+      probe_out5 : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+      probe_out6 : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+      probe_out7 : OUT STD_LOGIC_VECTOR(47 DOWNTO 0);
+      probe_in0 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+      probe_in1 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+      probe_in2 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+      probe_in3 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+      probe_in4 : IN STD_LOGIC_VECTOR(47 DOWNTO 0)
       );
   end component vio_0;
 
@@ -656,15 +681,34 @@ begin
       pdebug => open
       );
 
+  process(clk250mhz)
+  begin
+    if rising_edge(clk250mhz) then
+      if network_override_en = '1' then
+        MyIpAddr       <= network_override_ipaddr;
+        MyMacAddr      <= network_override_macaddr;
+        MyNetMask      <= network_override_netmask;
+        DefaultGateway <= network_override_gateway;
+        TargetIPAddr   <= network_override_target;
+      else
+        MyIpAddr       <= config_memory_ipaddr;
+        MyMacAddr      <= config_memory_macaddr;
+        MyNetMask      <= config_memory_netmask;
+        DefaultGateway <= config_memory_gateway;
+        TargetIPAddr   <= config_memory_target;
+      end if;
+    end if;
+  end process;
+
   config_memory_wrapper_i : config_memory_wrapper port map(
     clk => clk250mhz,
     reset => sys_reset,
-			     
-    MYIPADDR0_o => MyIpAddr,
-    MYNETMASK0_o => MyNetMask,
-    MYDEFAULTGATEWAY0_o => DefaultGateway,
-    MYTARGETIPADDR0_o => TargetIPAddr,
-    MYMACADDR0_o => MyMacAddr,
+    
+    MYIPADDR0_o => config_memory_ipaddr,
+    MYNETMASK0_o => config_memory_netmask,
+    MYDEFAULTGATEWAY0_o => config_memory_gateway,
+    MYTARGETIPADDR0_o => config_memory_target,
+    MYMACADDR0_o => config_memory_macaddr,
     
     MYIPADDR1_o => open,
     MYNETMASK1_o => open,
@@ -788,7 +832,18 @@ begin
     port map(
       clk => clk250mhz,
       probe_out0 => mff_sender_wait_const,
-      probe_out1 => sender_measure_wait_const
+      probe_out1 => sender_measure_wait_const,
+      probe_out2(0) => network_override_en,
+      probe_out3 => network_override_ipaddr,
+      probe_out4 => network_override_netmask,
+      probe_out5 => network_override_gateway,
+      probe_out6 => network_override_target,
+      probe_out7 => network_override_macaddr,
+      probe_in0 => MyIpAddr,
+      probe_in1 => MyNetMask,
+      probe_in2 => DefaultGateway,
+      probe_in3 => TargetIPAddr,
+      probe_in4 => MyMacAddr
       );
   
   ila_ether_snoop_i : ila_ether_snoop port map(
