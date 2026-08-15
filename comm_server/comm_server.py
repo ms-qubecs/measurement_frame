@@ -1,5 +1,6 @@
 import sys
 import os
+import argparse
 import socket
 import struct
 from dataclasses import dataclass
@@ -9,10 +10,6 @@ import expr_ctrl
 sys.path.insert(0, os.getcwd())
 
 import read_record
-
-TARGET_HOST = '10.3.0.240'
-
-INTERFACE = "enp5s0"
 
 ETHERTYPE = 0x3535
 SUPPORTED_VERSION = 0x0001
@@ -65,7 +62,7 @@ def parse_frame(frame: bytes) -> EthernetCommand:
         arguments=arguments,
     )
 
-def handle_command(packet: EthernetCommand) -> None:
+def handle_command(packet: EthernetCommand, target_host: str) -> None:
     print()
     print(f"Destination MAC : {format_mac(packet.destination_mac)}")
     print(f"Source MAC      : {format_mac(packet.source_mac)}")
@@ -80,7 +77,7 @@ def handle_command(packet: EthernetCommand) -> None:
     if packet.command == CMD_RESET_SYSTEM:
         print("Command name    : reset system")
 
-        expr = expr_ctrl.ExprCtrl(TARGET_HOST)
+        expr = expr_ctrl.ExprCtrl(target_host)
         expr.set_reset()
 
         SHOTS = 0
@@ -95,7 +92,7 @@ def handle_command(packet: EthernetCommand) -> None:
         print("Command name    : set backend")
         print(f"Backend MAC     : {format_mac(backend_mac)}")
 
-        expr = expr_ctrl.ExprCtrl(TARGET_HOST)
+        expr = expr_ctrl.ExprCtrl(target_host)
         expr.set_mac_address_prim(backend_mac)
 
     elif packet.command == CMD_KICK_MEASUREMENT:
@@ -115,7 +112,7 @@ def handle_command(packet: EthernetCommand) -> None:
         print(f"Number of rounds: {number_of_rounds}")
         print(f"Shots: {shots}")
 
-        expr = expr_ctrl.ExprCtrl(TARGET_HOST)
+        expr = expr_ctrl.ExprCtrl(target_host)
 
         if code_distance == 0:
             code_distance = 3
@@ -154,13 +151,14 @@ def handle_command(packet: EthernetCommand) -> None:
         print(f"Arguments       : {packet.arguments.hex(' ')}")
 
 
-def main() -> None:
+def main(interface, target_host) -> None:
     # 0x3535のEthernetフレームだけを受信
     with socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETHERTYPE)) as sock:
-        sock.bind((INTERFACE, 0))
+        sock.bind((interface, 0))
 
-        print(f"Listening on {INTERFACE}")
+        print(f"Listening on {interface}")
         print(f"EtherType: 0x{ETHERTYPE:04x}")
+        print(f"Target host: {target_host}")
 
         while True:
             frame, address = sock.recvfrom(65535)
@@ -175,8 +173,13 @@ def main() -> None:
             if packet.ethertype != ETHERTYPE:
                 continue
 
-            handle_command(packet)
+            handle_command(packet, target_host)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--interface", default="eth0")
+    parser.add_argument("--target-host", default="10.3.0.240")
+    args = parser.parse_args()
+
+    main(args.interface, args.target_host)
