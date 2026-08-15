@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     char src_mac[18]; // "XX:XX:XX:XX:XX:XX\0"
     get_mac_address(src_mac, interface_name);
 
-    send_ethernet_message(interface_name, argv[2], src_mac, 0x0344, argv[3]);
+    send_ethernet_message(interface_name, argv[2], src_mac, 0x3434, argv[3]);
 
     return 0;
 }
