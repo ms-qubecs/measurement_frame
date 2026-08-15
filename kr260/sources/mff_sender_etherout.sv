@@ -115,6 +115,14 @@ module mff_sender_etherout
 		    ether_out_en <= 0;
 		    ether_out_data <= 0;
 		end
+		default: begin
+		    state <= IDLE;
+		    ether_out_en <= 0;
+		    ether_out_req <= 0;
+		    ether_out_data <= 0;
+		    ether_frame_rd <= 0;
+		    ether_frame_dout_r <= ether_frame_dout;
+		end
 	    endcase // case (state)
 	end
     end // always @ (posedge clk)

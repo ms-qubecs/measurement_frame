@@ -247,7 +247,7 @@ module ctrl_upl_parser
 			UPLOut_Data[127:104] <= 24'hE10015;
 			UPLOut_Data[103:0] <= 0;
 		    end else if(ctrl_mode == CTRL_GET_RESULT) begin
-			UPLOut_Data[127:104] <= 24'hE10014;
+			UPLOut_Data[127:104] <= 24'hE10016;
 			UPLOut_Data[103:96] <= 0;
 			UPLOut_Data[95:32] <= internal_counter;
 			UPLOut_Data[31:0] <= 0;
@@ -286,6 +286,18 @@ module ctrl_upl_parser
 			UPLOut_Data <= 0;
 		    end
 		    state <= IDLE;
+		end
+		default: begin
+		    state <= IDLE;
+		    UPLOut_Request <= 0;
+		    UPLOut_Enable <= 0;
+		    UPLOut_Data <= 128'd0;
+		    all_reset_kick <= 0;
+		    dummy_sender_reset <= 0;
+		    dummy_sender_kick <= 0;
+		    memory_we <= 0;
+		    ctrl_mode <= CTRL_NONE;
+		    reset_internal_counter <= 0; // increment internal counter
 		end
 	    endcase // case (state)
 	end

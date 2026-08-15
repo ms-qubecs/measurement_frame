@@ -315,6 +315,28 @@ architecture RTL of top_kr260 is
       );
   end component mff_sender_wrapper;
 
+  component mff_receiver
+    port (
+      clk   : in std_logic;
+      reset : in std_logic;
+
+      ether_in_req  : in std_logic;
+      ether_in_en   : in std_logic;
+      ether_in_data : in std_logic_vector(127 downto 0);
+
+      mff_valid         : out std_logic;
+      dest_mac          : out std_logic_vector(47 downto 0);
+      src_mac           : out std_logic_vector(47 downto 0);
+      ether_type        : out std_logic_vector(15 downto 0);
+      mff_version       : out std_logic_vector(15 downto 0);
+      mff_step_id       : out std_logic_vector(63 downto 0);
+      mff_device_id     : out std_logic_vector(31 downto 0);
+      mff_num_of_qubits : out std_logic_vector(31 downto 0);
+      mff_num_of_info   : out std_logic_vector(31 downto 0);
+      mff_payload       : out std_logic_vector(255 downto 0)
+      );
+  end component mff_receiver;
+
   --component design_1
   --end component design_1;
 
@@ -479,6 +501,33 @@ architecture RTL of top_kr260 is
       probe1  : in std_logic_vector(129 downto 0)
       );
   end component ila_ether_snoop;
+
+  component ila_mff_receiver
+    port (
+      clk     : in std_logic;
+      probe0  : in std_logic_vector(0 downto 0);
+      probe1  : in std_logic_vector(47 downto 0);
+      probe2  : in std_logic_vector(47 downto 0);
+      probe3  : in std_logic_vector(15 downto 0);
+      probe4  : in std_logic_vector(15 downto 0);
+      probe5  : in std_logic_vector(63 downto 0);
+      probe6  : in std_logic_vector(31 downto 0);
+      probe7  : in std_logic_vector(31 downto 0);
+      probe8  : in std_logic_vector(31 downto 0);
+      probe9  : in std_logic_vector(255 downto 0)
+      );
+  end component ila_mff_receiver;
+
+  signal mff_valid               : std_logic;
+  signal mff_receiver_dest_mac   : std_logic_vector(47 downto 0);
+  signal mff_receiver_src_mac    : std_logic_vector(47 downto 0);
+  signal mff_receiver_ether_type : std_logic_vector(15 downto 0);
+  signal mff_version             : std_logic_vector(15 downto 0);
+  signal mff_step_id             : std_logic_vector(63 downto 0);
+  signal mff_device_id           : std_logic_vector(31 downto 0);
+  signal mff_num_of_qubits       : std_logic_vector(31 downto 0);
+  signal mff_num_of_info         : std_logic_vector(31 downto 0);
+  signal mff_payload             : std_logic_vector(255 downto 0);
 
 begin
 
@@ -853,5 +902,39 @@ begin
     probe1(128) => pEther_Snoop_Enable,
     probe1(129) => pEther_Snoop_Request
     );
+
+  mff_receiver_i : mff_receiver port map(
+    clk   => clk250mhz,
+    reset => sys_reset,
+
+    ether_in_req => pEther_Snoop_Request,
+    ether_in_en  => pEther_Snoop_Enable,
+    ether_in_data => pEther_Snoop_Data,
+
+    mff_valid         => mff_valid,
+    dest_mac          => mff_receiver_dest_mac,
+    src_mac           => mff_receiver_src_mac,
+    ether_type        => mff_receiver_ether_type,
+    mff_version       => mff_version,
+    mff_step_id       => mff_step_id,
+    mff_device_id     => mff_device_id,
+    mff_num_of_qubits => mff_num_of_qubits,
+    mff_num_of_info   => mff_num_of_info,
+    mff_payload       => mff_payload
+    );
+
+  ila_mff_receiver_i : ila_mff_receiver port map(
+      clk       => clk250mhz,
+      probe0(0) => mff_valid,
+      probe1    => mff_receiver_dest_mac,
+      probe2    => mff_receiver_src_mac,
+      probe3    => mff_receiver_ether_type,
+      probe4    => mff_version,
+      probe5    => mff_step_id,
+      probe6    => mff_device_id,
+      probe7    => mff_num_of_qubits,
+      probe8    => mff_num_of_info,
+      probe9    => mff_payload
+      );
 
 end RTL;

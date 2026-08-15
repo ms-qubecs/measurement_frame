@@ -11,6 +11,7 @@ def main()
   vivado.set_board("xilinx.com:kr260_som:part0:1.1")
 
   vivado.add_sources(["./sources/ctrl_upl_parser.sv",
+                      "./sources/mff_receiver.sv",
                       "./sources/mff_sender.sv",
                       "./sources/mff_sender_etherout.sv",
                       "./sources/dummy_sender_frame_fifo.sv",
@@ -34,6 +35,7 @@ def main()
                       "./ipcores/xxv_ethernet_0.xci",
                       "./ipcores/vio_0.xci",
                       "./ipcores/ila_ether_snoop.xci",
+                      "./ipcores/ila_mff_receiver.xci",
                       ])
   
   vivado.add_bd("./scripts/design_1.tcl", "design_1")

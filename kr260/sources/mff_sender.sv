@@ -151,6 +151,12 @@ module mff_sender
 			mff_measure_wait_counter <= mff_measure_wait_counter - 1;
 		    end
                 end
+		default: begin
+		    ether_frame_we <= 0;
+		    mff_sender_round_counter <= 0;
+		    mem_addr <= 0;
+		    gen_state <= GEN_IDLE;
+		end
 	    endcase // case (gen_state)
 	end
     end
