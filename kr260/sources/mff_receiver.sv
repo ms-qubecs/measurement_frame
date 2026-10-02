@@ -1,6 +1,6 @@
 `default_nettype none
 
-module mff_receiver
+module mff_receiver#(parameter MFF_HEADER_TYPE=16'h3434)
   (
    input wire clk,
    input wire reset,
@@ -21,9 +21,11 @@ module mff_receiver
    output reg [255:0] mff_payload
    );
 
-    enum logic[7:0] {IDLE, DATA0, DATA1, DATA2, DATA3} state;
+    enum logic[7:0] {IDLE, DATA0, DATA1, DATA2, DATA3, DATA4} state;
 
     logic ether_in_en_d;
+
+    logic [47:0] payload_bytes;
 
     always @(posedge clk) begin
 
@@ -37,35 +39,47 @@ module mff_receiver
 		IDLE: begin
 		    if(ether_in_en_d == 1'b0 && ether_in_en == 1'b1) begin
 			state <= DATA0;
-			dest_mac    <= ether_in_data[127:80]; // 48
-			src_mac     <= ether_in_data[79:32];  // 48
-			ether_type  <= ether_in_data[31:16];  // 16
-			mff_version <= ether_in_data[15:0];   // 16
+			payload_bytes  <= ether_in_data[127:80]; // 48
+			dest_mac       <= ether_in_data[79:32]; // 48
+			src_mac[47:16] <= ether_in_data[31:0];  // 32
 		    end
 		    mff_valid <= 1'b0;
 		end
 		DATA0: begin
 		    state <= DATA1;
-		    mff_step_id       <= ether_in_data[127:64]; // 64
-		    mff_device_id     <= ether_in_data[63:32];  // 32
-		    mff_num_of_qubits <= ether_in_data[31:0];   // 32
+		    src_mac[15:0]        <= ether_in_data[127:112]; // 16
+		    ether_type           <= ether_in_data[111:96];  // 16
+		    mff_version          <= ether_in_data[95:80];   // 16
+		    mff_step_id          <= ether_in_data[79:16];   // 64
+		    mff_device_id[31:16] <= ether_in_data[15:0];    // 16
 		    mff_valid <= 1'b0;
 		end
 		DATA1: begin
 		    state <= DATA2;
-		    mff_num_of_info      <= ether_in_data[127:96]; // 32
-		    mff_payload[255:160] <= ether_in_data[95:0];   // 96
+		    mff_device_id[15:0]  <= ether_in_data[127:112]; // 16
+		    mff_num_of_qubits    <= ether_in_data[111:80];  // 32
+		    mff_num_of_info      <= ether_in_data[79:48];   // 32
+		    mff_payload[255:208] <= ether_in_data[47:0];    // 48
 		    mff_valid <= 1'b0;
 		end
 		DATA2: begin
 		    state <= DATA3;
-		    mff_payload[159:32] <= ether_in_data[127:0]; // 128
+		    mff_payload[207:80] <= ether_in_data[127:0]; // 128
 		    mff_valid <= 1'b0;
 		end
 		DATA3: begin
-		    state <= IDLE;
-		    mff_payload[31:0] <= ether_in_data[127:96]; // 32
-		    mff_valid <= 1'b1;
+		    state <= DATA4;
+		    mff_payload[79:0] <= ether_in_data[127:48]; // 80
+		    mff_valid <= 1'b0;
+		end
+		DATA4 : begin
+		    mff_valid <= 0;
+		    if(ether_in_en == 0) begin // wait for end of frame
+			state <= IDLE;
+			if(ether_type == MFF_HEADER_TYPE) begin
+			    mff_valid <= 1'b1; // assert
+			end
+		    end
 		end
 		default: begin
 		    state <= IDLE;
